@@ -46,6 +46,8 @@ body {
   border-radius: 10px;
   background-color: black;
   box-shadow: inset 0px 0px 10px 3px var(--primary-color);
+  font-size: 150px;
+  text-shadow: 0 0 .2em var(--primary-color), 0 0 .2em var(--primary-color);
 }
 .cell p {
   margin: 0;

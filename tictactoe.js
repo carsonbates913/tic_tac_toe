@@ -6,11 +6,9 @@ const Gameboard = (() => {
   const getBoard = () => board;
 
   const addMove = (i, marker) => {
-    if(-1 < i < 9) {
       if(!board[i]) {
         board[i] = marker;
       }
-    }
   };
 
   const resetBoard = () => board = ['', '', '', '', '', '', '', '', ''];
@@ -27,44 +25,36 @@ function Player(name, marker) {
 }
 
 const Game = (() => {
-
   let Player1;
   let Player2;
-
   let currentPlayer;
-
   let finished = false; 
 
-  const Start = () => {
-    Gameboard.resetBoard();
-    Player1 = Player(document.querySelector("#player1").value, "X");
-    Player2 = Player(document.querySelector("#player2").value, "O");
+  const start = (player1Name, player2Name) => {
+    Player1 = Player(player1Name, "X");
+    Player2 = Player(player2Name, "O");
     currentPlayer = Player1;
-    console.log(`Start Game! it is ${Player1.getName()}'s turn`);
   }
 
-  const MakeMove = (index) => {
+  const makeMove = (index) => {
     if(finished){
       console.log("This game is over :( --- Please start a new one!");
       return;
     }
     currentPlayer.makeMove(index, currentPlayer.getMarker());
-    console.log(Gameboard.getBoard());
     const result = checkWinner();
     if(result) {
-      if(result === "Tie"){
-        console.log(`Congratulations! No one wins! It's a Tie!`);
-      }else{
-        console.log(`Congratulations! ${currentPlayer.getName()} wins!`); 
-      }
+      DisplayController.toggleWinner(result);
+      DisplayController.renderBoard();
       finished = true;
-    }
+    }else{
     nextTurn();
     DisplayController.renderBoard();
+    }
   }
 
   const checkWinner = () => {
-    board = Gameboard.getBoard();
+    const board = Gameboard.getBoard();
     const selection = [
       [0, 1, 2],
       [3, 4, 5],
@@ -87,7 +77,6 @@ const Game = (() => {
     }
 
     return false;
-
   }
 
   const nextTurn = () => {
@@ -95,34 +84,41 @@ const Game = (() => {
     DisplayController.toggleTurn();
   }
 
-  const GetCurrentPlayer = () => {
-    return currentPlayer; 
+  const getCurrentPlayer = () => currentPlayer; 
+
+  const reset = () => {
+    Gameboard.resetBoard();
+    finished = false;
   }
 
-  return {Start, MakeMove, GetCurrentPlayer};
+  return {start, makeMove, getCurrentPlayer, reset};
 })();
 
 const DisplayController = (() => {
 
-  document.querySelector(".start").addEventListener("click", () =>{
-    Game.Start();
-    DisplayController.toggleStart();
-  });
+  const initializeUI = () => {
+    document.querySelector('.start').addEventListener('click', () => {
+      const player1Name = document.querySelector('#player1').value;
+      const player2Name = document.querySelector('#player2').value;
+      Game.start(player1Name, player2Name);
+      toggleStart();
+    });
+  };
+
+  document.querySelector(".reset").addEventListener("click", () => {
+    DisplayController.resetBoard();
+  })
 
   const renderBoard = () => {
     Gameboard.getBoard().forEach((value, index) => {
       const cell = document.querySelector(`#cell${index}`);
-      cell.innerHTML = '';
-      if(value){
-        /*cell.innerHTML = `<img src="images/${vaule}.png"`;*/
-        cell.innerHTML = `<p>${value}</p>`;
-      }
+      cell.innerHTML = value ? `<p>${value}</p>` : '';
     });
   }
 
   const toggleTurn = () => {
-    document.querySelector(".current-player-title").innerHTML = `${Game.GetCurrentPlayer().getName()}'s Turn`;
-      document.querySelector(".current-player-marker").innerHTML = `${Game.GetCurrentPlayer().getMarker()}`;
+    document.querySelector(".current-player-title").innerHTML = `${Game.getCurrentPlayer().getName()}'s Turn`;
+      document.querySelector(".current-player-marker").innerHTML = `${Game.getCurrentPlayer().getMarker()}`;
   }
 
   const toggleStart = () => {
@@ -130,9 +126,28 @@ const DisplayController = (() => {
       document.querySelector(".reset").style.display = "block";
       document.querySelectorAll(".form-div").forEach( div => {div.style.display = "none"})
       document.querySelector(".current-player").style.display = "block";
-      document.querySelector(".current-player-title").innerHTML = `${Game.GetCurrentPlayer().getName()}'s Turn`;
-      document.querySelector(".current-player-marker").innerHTML = `${Game.GetCurrentPlayer().getMarker()}`;
+      toggleTurn();
+      document.querySelectorAll(".cell").forEach((cell, index) => { cell.addEventListener("click", () => {Game.makeMove(index)})});
+      }
+
+  const toggleWinner = (result) => {
+    if(result === "Tie"){
+      document.querySelector(".current-player-title").innerHTML = "Its a Draw!"
+      document.querySelector(".current-player-marker").innerHTML = '';
+    }else{
+      document.querySelector(".current-player-title").innerHTML = `Congratulations! ${Game.getCurrentPlayer().getName()} wins!`
+      document.querySelector(".current-player-marker").innerHTML = '';
+    }
+
   }
 
-  return {renderBoard, toggleStart, toggleTurn};
+  const resetBoard = () => {
+    Game.reset();
+    DisplayController.renderBoard();
+    toggleTurn();
+  }
+
+  initializeUI();
+
+  return {renderBoard, toggleStart, toggleTurn, toggleWinner, resetBoard};
 })();
