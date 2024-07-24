@@ -37,8 +37,8 @@ const Game = (() => {
 
   const Start = () => {
     Gameboard.resetBoard();
-    Player1 = Player(prompt("What is Player 1's name?"), "X");
-    Player2 = Player(prompt("what is Player 2's name?"), "O");
+    Player1 = Player(document.querySelector("#player1").value, "X");
+    Player2 = Player(document.querySelector("#player2").value, "O");
     currentPlayer = Player1;
     console.log(`Start Game! it is ${Player1.getName()}'s turn`);
   }
@@ -60,6 +60,7 @@ const Game = (() => {
       finished = true;
     }
     nextTurn();
+    DisplayController.renderBoard();
   }
 
   const checkWinner = () => {
@@ -91,11 +92,47 @@ const Game = (() => {
 
   const nextTurn = () => {
     currentPlayer = currentPlayer === Player1 ? Player2 : Player1;
+    DisplayController.toggleTurn();
   }
 
-  return {Start, MakeMove};
+  const GetCurrentPlayer = () => {
+    return currentPlayer; 
+  }
+
+  return {Start, MakeMove, GetCurrentPlayer};
 })();
 
-const DisplayController = () => {
-  
-}
+const DisplayController = (() => {
+
+  document.querySelector(".start").addEventListener("click", () =>{
+    Game.Start();
+    DisplayController.toggleStart();
+  });
+
+  const renderBoard = () => {
+    Gameboard.getBoard().forEach((value, index) => {
+      const cell = document.querySelector(`#cell${index}`);
+      cell.innerHTML = '';
+      if(value){
+        /*cell.innerHTML = `<img src="images/${vaule}.png"`;*/
+        cell.innerHTML = `<p>${value}</p>`;
+      }
+    });
+  }
+
+  const toggleTurn = () => {
+    document.querySelector(".current-player-title").innerHTML = `${Game.GetCurrentPlayer().getName()}'s Turn`;
+      document.querySelector(".current-player-marker").innerHTML = `${Game.GetCurrentPlayer().getMarker()}`;
+  }
+
+  const toggleStart = () => {
+      document.querySelector(".start").style.display = "none";
+      document.querySelector(".reset").style.display = "block";
+      document.querySelectorAll(".form-div").forEach( div => {div.style.display = "none"})
+      document.querySelector(".current-player").style.display = "block";
+      document.querySelector(".current-player-title").innerHTML = `${Game.GetCurrentPlayer().getName()}'s Turn`;
+      document.querySelector(".current-player-marker").innerHTML = `${Game.GetCurrentPlayer().getMarker()}`;
+  }
+
+  return {renderBoard, toggleStart, toggleTurn};
+})();
