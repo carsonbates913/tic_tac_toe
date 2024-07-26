@@ -129,8 +129,6 @@ const DisplayController = (() => {
      });
   };
 
-
-
   const renderBoard = () => {
     Gameboard.getBoard().forEach((value, index) => {
       const cell = document.querySelector(`#cell${index}`);
