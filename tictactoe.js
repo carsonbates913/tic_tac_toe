@@ -8,6 +8,9 @@ const Gameboard = (() => {
   const addMove = (i, marker) => {
       if(!board[i]) {
         board[i] = marker;
+        return true;
+      }else {
+        return false;
       }
   };
 
@@ -38,19 +41,17 @@ const Game = (() => {
 
   const makeMove = (index) => {
     if(finished){
-      console.log("This game is over :( --- Please start a new one!");
       return;
     }
-    currentPlayer.makeMove(index, currentPlayer.getMarker());
+    if(currentPlayer.makeMove(index)){
+      nextTurn();
+    }
     const result = checkWinner();
     if(result) {
       DisplayController.toggleWinner(result);
-      DisplayController.renderBoard();
       finished = true;
-    }else{
-    nextTurn();
-    DisplayController.renderBoard();
     }
+    DisplayController.renderBoard();
   }
 
   const checkWinner = () => {
@@ -81,7 +82,7 @@ const Game = (() => {
 
   const nextTurn = () => {
     currentPlayer = currentPlayer === Player1 ? Player2 : Player1;
-    DisplayController.toggleTurn();
+    DisplayController.updateTurnDisplay();
   }
 
   const getCurrentPlayer = () => currentPlayer; 
@@ -91,23 +92,44 @@ const Game = (() => {
     finished = false;
   }
 
-  return {start, makeMove, getCurrentPlayer, reset};
+  const getFinished = () => finished;
+
+  return {start, makeMove, getCurrentPlayer, getFinished, reset};
 })();
 
 const DisplayController = (() => {
+  const root = document.documentElement;
+  const startButton = document.querySelector('.start');
+  const resetButton = document.querySelector('.reset');
+  const player1Input = document.querySelector('#player1');
+  const player2Input = document.querySelector('#player2');
+  const playerForm = document.querySelector(".player-form");
+  const player1Color = document.getElementById('player1-color');
+  const player2Color = document.getElementById('player2-color');
+  const currentPlayer = document.querySelector(".current-player");
+  const currentPlayerTitle = document.querySelector('.current-player-title');
+  const currentPlayerMarker = document.querySelector('.current-player-marker');
+  const cells = document.querySelectorAll('.cell');
 
   const initializeUI = () => {
-    document.querySelector('.start').addEventListener('click', () => {
-      const player1Name = document.querySelector('#player1').value;
-      const player2Name = document.querySelector('#player2').value;
-      Game.start(player1Name, player2Name);
+    startButton.addEventListener('click', () => {
+      Game.start(player1Input.value, player2Input.value);
       toggleStart();
     });
+    resetButton.addEventListener("click", () => {
+      DisplayController.resetBoard();
+    })
+    player1Color.addEventListener('input', (event) => {
+      const selectedColor = event.target.value;
+      root.style.setProperty('--player1-color', selectedColor);
+     });
+    player2Color.addEventListener('input', (event) => {
+      const selectedColor = event.target.value;
+      root.style.setProperty('--player2-color', selectedColor);
+     });
   };
 
-  document.querySelector(".reset").addEventListener("click", () => {
-    DisplayController.resetBoard();
-  })
+
 
   const renderBoard = () => {
     Gameboard.getBoard().forEach((value, index) => {
@@ -116,38 +138,63 @@ const DisplayController = (() => {
     });
   }
 
-  const toggleTurn = () => {
-    document.querySelector(".current-player-title").innerHTML = `${Game.getCurrentPlayer().getName()}'s Turn`;
-      document.querySelector(".current-player-marker").innerHTML = `${Game.getCurrentPlayer().getMarker()}`;
+  const updateTurnDisplay = () => {
+    currentPlayerTitle.innerHTML = `${Game.getCurrentPlayer().getName()}'s Turn`;
+    currentPlayerMarker.innerHTML = `${Game.getCurrentPlayer().getMarker()}`;
   }
 
   const toggleStart = () => {
-      document.querySelector(".start").style.display = "none";
-      document.querySelector(".reset").style.display = "block";
-      document.querySelectorAll(".form-div").forEach( div => {div.style.display = "none"})
-      document.querySelector(".current-player").style.display = "block";
-      toggleTurn();
-      document.querySelectorAll(".cell").forEach((cell, index) => { cell.addEventListener("click", () => {Game.makeMove(index)})});
-      }
+      startButton.style.display = "none";
+      resetButton.style.display = "block";
+      playerForm.style.display = "none";
+      currentPlayer.style.display = "block";
+      updateTurnDisplay();
+      addTileListeners();
+    }
 
   const toggleWinner = (result) => {
     if(result === "Tie"){
-      document.querySelector(".current-player-title").innerHTML = "Its a Draw!"
-      document.querySelector(".current-player-marker").innerHTML = '';
+      currentPlayerTitle.innerHTML = "Its a Draw!"
+      currentPlayerMarker.innerHTML = '';
     }else{
-      document.querySelector(".current-player-title").innerHTML = `Congratulations! ${Game.getCurrentPlayer().getName()} wins!`
-      document.querySelector(".current-player-marker").innerHTML = '';
+      currentPlayerTitle.innerHTML = `Congratulations! ${Game.getCurrentPlayer().getName()} wins!`
+      currentPlayerMarker.innerHTML = '';
     }
-
   }
 
   const resetBoard = () => {
     Game.reset();
+    cells.forEach(cell => cell.setAttribute("class", "cell"));
     DisplayController.renderBoard();
-    toggleTurn();
+    updateTurnDisplay();
+  }
+
+  const addTileListeners =() => {
+    cells.forEach((cell, index) => { 
+      cell.addEventListener("click", () => {
+        if(Game.makeMove(index)){
+          cell.classList.add("player1");
+        }
+        cell.classList.remove("hover");
+      });
+      cell.addEventListener("mouseenter", () => {
+        if(cell.innerHTML === '' && !Game.getFinished()){
+          cell.innerHTML = Game.getCurrentPlayer().getMarker();
+          cell.classList.add("hover");
+          Game.getCurrentPlayer().getMarker() === "X" ? cell.classList.add("player1") : cell.classList.add("player2");
+        }
+      });
+      cell.addEventListener("mouseleave", () => {
+        if(Gameboard.getBoard()[index] === '' && !Game.getFinished()) {
+          cell.innerHTML = '';
+          cell.classList.remove("hover");
+          Game.getCurrentPlayer().getMarker() === "X" ? cell.classList.remove("player1") : cell.classList.remove("player2");
+        }
+      });
+    }); 
   }
 
   initializeUI();
 
-  return {renderBoard, toggleStart, toggleTurn, toggleWinner, resetBoard};
+  return {renderBoard, toggleStart, updateTurnDisplay, toggleWinner, resetBoard};
 })();

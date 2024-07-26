@@ -8,6 +8,7 @@
   </head>
   <body>
     <div class="main">
+      <!--Gameboard-->
       <div class="container">
         <div class="cell" id="cell0"></div>
         <div class="cell" id="cell1"></div>
@@ -19,6 +20,7 @@
         <div class="cell" id="cell7"></div>
         <div class="cell" id="cell8"></div>
       </div>
+      <!--Interface-->
       <div class="interface">
         <div class="current-player" style="display: none">
           <h1 class="current-player-title"></h1>
@@ -27,11 +29,23 @@
         <div class="player-form">
           <div class="form-div">
             <label for="player1">Player 1</label>
-            <input type="text" id="player1" name="player1" />
+            <input type="text" id="player1" name="player1" class="player1" />
+            <select class="select-color player1" id="player1-color">
+              <option value="0, 255, 255">Blue</option>
+              <option value="255, 255, 5">Yellow</option>
+              <option value="255, 16, 240">Pink</option>
+              <option value="255, 92, 0">Orange</option>
+            </select>
           </div>
           <div class="form-div">
             <label for="player2">Player 2</label>
-            <input type="text" id="player2" name="player2" />
+            <input type="text" id="player2" name="player2" class="player2" />
+            <select class="select-color player2" id="player2-color">
+              <option value="0, 255, 255">Blue</option>
+              <option value="255, 255, 5">Yellow</option>
+              <option value="255, 16, 240">Pink</option>
+              <option value="255, 92, 0">Orange</option>
+            </select>
           </div>
         </div>
         <div class="controls">
