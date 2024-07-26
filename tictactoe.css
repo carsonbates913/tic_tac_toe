@@ -112,6 +112,7 @@ input[type = "text"],
 .select-color {
   padding: .5em 1em;
   border-radius: 7px;
+  outline: none;
   text-align: center;
   background-color: transparent;
 }
