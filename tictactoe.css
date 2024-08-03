@@ -117,6 +117,14 @@ input[type = "text"],
   background-color: transparent;
 }
 
+label.player1 {
+  color: rgb(var(--player1-color));
+}
+
+label.player2 {
+  color: rgb(var(--player2-color));
+}
+
 select.player1,
 #player1 {
   color: rgb(var(--player1-color));
